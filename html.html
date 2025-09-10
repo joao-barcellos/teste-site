@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Transformation</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Nunito Sans (conforme guia de marca) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Aplicando a fonte principal do produto (Nunito Sans) conforme o guia de marca */
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            overflow: hidden; /* Impede scroll da página inteira */
+        }
+        
+        /* Estilos para o submenu (acordeão) */
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+
+        .submenu.open {
+            max-height: 500px; /* Altura aumentada para acomodar todos os itens */
+        }
+
+        /* Destaque para abas principais */
+        .parent-link {
+            font-weight: 600; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15); 
+        }
+
+        /* Remove a borda do último item principal */
+        #menu-list > li:last-child > .parent-link {
+            border-bottom: none;
+        }
+
+        /* Estilo para o item filho ativo */
+        .child-link.active {
+            background-color: rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+            color: white;
+        }
+        
+        /* Rotação do ícone de seta quando o item pai está aberto */
+        .parent-link.open .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* --- INÍCIO: CSS PARA BARRA DE ROLAGEM CUSTOMIZADA --- */
+        /* CORREÇÃO: Alvo alterado para #sidebar-content */
+        #sidebar-content::-webkit-scrollbar {
+            width: 8px; /* Largura da barra de rolagem */
+        }
+
+        #sidebar-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1); /* Cor de fundo do trilho */
+            border-radius: 4px; /* Cantos arredondados */
+        }
+
+        #sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3); /* Cor do indicador de rolagem */
+            border-radius: 4px; /* Cantos arredondados */
+        }
+
+        #sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        /* --- FIM: CSS PARA BARRA DE ROLAGEM CUSTOMIZADA --- */
+
+        /* Estilos para esconder/mostrar a sidebar */
+        #sidebar {
+            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+        }
+
+        #sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Botão flutuante para ABRIR a sidebar -->
+    <button id="sidebar-open-btn" title="Abrir menu" class="hidden fixed top-4 left-4 z-50 p-2 rounded-md text-white bg-[#6E0AD6] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+        </svg>
+    </button>
+
+    <div class="flex h-screen">
+        <!-- Container da Sidebar -->
+        <div id="sidebar" class="w-80 h-screen bg-[#6E0AD6] text-white flex flex-col shadow-2xl relative">
+            <!-- Botão para FECHAR a sidebar (dentro dela) -->
+            <button id="sidebar-close-btn" title="Fechar menu" class="absolute top-4 right-4 p-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <!-- CORREÇÃO: Este container agora controla a rolagem de todo o conteúdo da sidebar -->
+            <div id="sidebar-content" class="flex flex-col p-4 flex-grow overflow-y-auto">
+                 <!-- Cabeçalho com Logo e Título -->
+                <div class="flex items-center gap-4 mb-4 px-2 flex-shrink-0">
+                    <img src="https://placehold.co/48x48/ffffff/6E0AD6?text=FT" alt="Ícone FT" class="w-12 h-12 rounded-lg object-cover">
+                    <h1 class="text-xl font-bold leading-tight">Finance<br>Transformation</h1>
+                </div>
+
+                <!-- Linha separadora -->
+                <hr class="border-t border-white/20 mb-2 flex-shrink-0">
+                
+                <!-- Botões de Expandir/Recolher Tudo -->
+                <div class="px-2 mb-4 flex items-center justify-start gap-2 flex-shrink-0">
+                    <button id="expand-all-btn" title="Expandir tudo" class="p-2 rounded-md text-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button id="collapse-all-btn" title="Recolher tudo" class="p-2 rounded-md text-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Navegação Principal -->
+                <!-- CORREÇÃO: overflow-y-auto removido daqui -->
+                <nav class="flex-grow">
+                    <ul id="menu-list" class="space-y-1">
+                        <!-- Os itens de menu serão gerados pelo JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+             <!-- Barra superior com os botões -->
+            <header id="main-header" class="bg-[#6E0AD6] shadow-md p-2 flex items-center justify-end flex-shrink-0 gap-2">
+                <button id="reload-button" title="Atualizar" class="p-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                       <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                       <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                    </svg>
+                </button>
+                <button id="fullscreen-button" title="Tela cheia" class="p-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                    </svg>
+                </button>
+            </header>
+
+            <!-- Área de conteúdo com scroll -->
+            <main id="main-content-area" class="flex-1 p-6 flex flex-col overflow-y-auto bg-gray-100">
+                 <h1 id="dashboard-title" class="text-3xl text-gray-800 font-bold flex-shrink-0">Dashboard</h1>
+                 <p id="dashboard-subtitle" class="text-gray-600 mt-2 flex-shrink-0">Bem-vindo ao painel da Controladoria.</p>
+
+                 <!-- Container do Iframe -->
+                 <div id="iframe-container" class="mt-8 bg-white rounded-lg shadow-lg flex-grow">
+                    <iframe id="report-frame" class="w-full h-full border-0 rounded-lg" title="Relatório Power BI"></iframe>
+                 </div>
+                 <!-- Mensagem para links externos -->
+                 <div id="external-link-message" class="hidden mt-8 flex-grow flex items-center justify-center">
+                    <div class="text-center text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        <p class="mt-4 text-lg">O conteúdo de <strong id="external-link-name"></strong> foi aberto em uma nova aba.</p>
+                    </div>
+                 </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Variáveis dos elementos ---
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOpenBtn = document.getElementById('sidebar-open-btn');
+            const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+            const menuList = document.getElementById('menu-list');
+            const reportFrame = document.getElementById('report-frame');
+            const dashboardTitle = document.getElementById('dashboard-title');
+            const dashboardSubtitle = document.getElementById('dashboard-subtitle');
+            const iframeContainer = document.getElementById('iframe-container');
+            const externalLinkMessage = document.getElementById('external-link-message');
+            const externalLinkName = document.getElementById('external-link-name');
+            const fullscreenButton = document.getElementById('fullscreen-button');
+            const reloadButton = document.getElementById('reload-button');
+            const mainHeader = document.getElementById('main-header');
+            const expandAllBtn = document.getElementById('expand-all-btn');
+            const collapseAllBtn = document.getElementById('collapse-all-btn');
+
+            // --- Lógica dos botões ---
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.parent-link').forEach(link => {
+                        link.classList.add('open');
+                        if(link.nextElementSibling) {
+                           link.nextElementSibling.classList.add('open');
+                        }
+                    });
+                });
+            }
+            if (collapseAllBtn) {
+                collapseAllBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.parent-link').forEach(link => {
+                        link.classList.remove('open');
+                        if(link.nextElementSibling) {
+                           link.nextElementSibling.classList.remove('open');
+                        }
+                    });
+                });
+            }
+            if (sidebarOpenBtn && sidebarCloseBtn && sidebar) {
+                sidebarCloseBtn.addEventListener('click', () => {
+                    sidebar.classList.add('collapsed');
+                    setTimeout(() => sidebarOpenBtn.classList.remove('hidden'), 300);
+                });
+                sidebarOpenBtn.addEventListener('click', () => {
+                    sidebarOpenBtn.classList.add('hidden');
+                    sidebar.classList.remove('collapsed');
+                });
+            }
+            if(reloadButton) {
+                reloadButton.addEventListener('click', () => location.reload());
+            }
+            if (fullscreenButton && sidebar && mainHeader) {
+                const mainContentArea = document.getElementById('main-content-area');
+                fullscreenButton.addEventListener('click', () => {
+                    sidebar.classList.toggle('hidden');
+                    mainHeader.classList.toggle('hidden');
+                    dashboardTitle.classList.toggle('hidden');
+                    dashboardSubtitle.classList.toggle('hidden');
+                    mainContentArea.classList.toggle('p-6');
+                    iframeContainer.classList.toggle('mt-8');
+                    externalLinkMessage.classList.toggle('mt-8')
+                    const isFullscreen = sidebar.classList.contains('hidden');
+                    let exitBtn = document.getElementById('exit-fullscreen-btn');
+                    if (isFullscreen) {
+                        if (!exitBtn) {
+                            exitBtn = document.createElement('button');
+                            exitBtn.id = 'exit-fullscreen-btn';
+                            exitBtn.title = 'Sair da tela cheia';
+                            exitBtn.className = 'fixed top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white';
+                            exitBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
+                            exitBtn.onclick = () => fullscreenButton.click();
+                            document.body.appendChild(exitBtn);
+                        }
+                        exitBtn.classList.remove('hidden');
+                    } else {
+                        if (exitBtn) exitBtn.classList.add('hidden');
+                    }
+                });
+            }
+
+            // ===================================================================
+            // LÓGICA DE FILTRAGEM E RENDERIZAÇÃO DE MENU
+            // ===================================================================
+
+            const permissionMap = {
+                "NZRFKP": "Fechamento", "TKTDZA": "Contabilidade", "STPXUE": "Tax",
+                "CJPDXL": "Jurídico", "WEPLHK": "SOP", "GWGANQ": "Delivery"
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const permissionsParam = urlParams.get('permissions');
+            const userPermissionCodes = permissionsParam ? permissionsParam.split(',') : [];
+
+            const allowedCategoryNames = userPermissionCodes
+                .map(code => permissionMap[code])
+                .filter(Boolean);
+
+            const allMenuItems = [
+                {
+                    name: 'Finance Transformation',
+                    children: [ 
+                        { name: 'Abrir solicitação', url: 'https://forms.monday.com/forms/embed/534ca05e87a5ef709f9118b6c20d3a2b?r=use1', type: 'powerbi' } 
+                    ],
+                    open: false
+                },
+                {
+                    name: 'Fechamento',
+                    children: [ 
+                        { name: 'Reporte', url: 'https://app.powerbi.com/reportEmbed?reportId=d4688f89-ac39-42fb-aaa2-5bf93d137bda&autoAuth=true&ctid=81a0f372-d5cd-4369-a46f-ec9b42720937&actionBarEnabled=true', type: 'powerbi' }, 
+                        { name: 'Tax', url: "#", type: 'powerbi' }, 
+                        { name: 'DFs', url: '#', type: 'weblink' }, 
+                        { name: 'Check P&D', url: "#", type: 'powerbi' }, 
+                        { name: 'Headcount', url: "#", type: 'powerbi' } ],
+                    open: false
+                },
+                {
+                    name: 'Contabilidade',
+                    children: [ 
+                        { name: 'CC Controladoria', url: '#', type: 'powerbi' } 
+                    ],
+                    open: false
+                },
+                {
+                    name: 'Tax',
+                    children: [ 
+                        { name: 'Tax fechamento', url: '#', type: 'powerbi' }, 
+                        { name: 'Impostos fornecedores', url: "#", type: 'powerbi' }, 
+                        { name: 'Tributário', url: '#', type: 'weblink' }, 
+                        { name: 'DIMP', url: '#', type: 'weblink' } 
+                    ],
+                    open: false
+                },            
+                {
+                    name: 'Jurídico',
+                    children: [ 
+                        { name: 'Contencioso', url: '#', type: 'powerbi' }, 
+                        { name: 'Contratos', url: "#", type: 'powerbi' } 
+                    ],
+                    open: false
+                },
+                {
+                    name: 'SOP',
+                    children: [ 
+                        { name: 'SOP', url: '#', type: 'powerbi' } 
+                    ],
+                    open: false
+                },
+                // --- INÍCIO: ITENS DE TESTE PARA FORÇAR A BARRA DE ROLAGEM ---
+                // Remova ou comente estes itens quando o menu real for populado
+                { name: 'Item de Teste 1', children: [ { name: 'Subitem Teste', url: '#', type: 'powerbi' } ], open: false },
+                { name: 'Item de Teste 2', children: [ { name: 'Subitem Teste', url: '#', type: 'powerbi' } ], open: false },
+                { name: 'Item de Teste 3', children: [ { name: 'Subitem Teste', url: '#', type: 'powerbi' } ], open: false },
+                { name: 'Item de Teste 4', children: [ { name: 'Subitem Teste', url: '#', type: 'powerbi' } ], open: false },
+                { name: 'Item de Teste 5', children: [ { name: 'Subitem Teste', url: '#', type: 'powerbi' } ], open: false }
+                // --- FIM: ITENS DE TESTE ---
+            ];
+
+            const filteredMenuData = allMenuItems.filter(category => {
+                // Se não houver permissões na URL, mostra tudo
+                if (userPermissionCodes.length === 0) return true;
+                // A categoria 'Finance Transformation' sempre é exibida
+                if (category.name === 'Finance Transformation') return true;
+                // Exibe categorias permitidas
+                return allowedCategoryNames.includes(category.name);
+            });
+            
+            // --- Renderização do Menu ---
+            if (!menuList) {
+                console.error("Elemento '#menu-list' não encontrado.");
+                return;
+            }
+
+            menuList.innerHTML = ''; 
+            filteredMenuData.forEach(item => {
+                if (item.children && item.children.length > 0) {
+                    const li = document.createElement('li');
+                    const parentLink = document.createElement('a');
+                    parentLink.href = '#';
+                    parentLink.className = 'nav-link parent-link flex justify-between items-center p-3 rounded-lg text-gray-200 hover:bg-white/10 hover:text-white transition-all duration-200 overflow-hidden';
+                    const span = document.createElement('span');
+                    span.textContent = item.name;
+                    span.className = 'whitespace-nowrap overflow-hidden text-ellipsis';
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('class', 'chevron-icon h-5 w-5 transition-transform duration-300 flex-shrink-0');
+                    svg.setAttribute('fill', 'none');
+                    svg.setAttribute('viewBox', '0 0 24 24');
+                    svg.setAttribute('stroke', 'currentColor');
+                    svg.setAttribute('stroke-width', '2');
+                    
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute("stroke-linecap", "round");
+                    path.setAttribute("stroke-linejoin", "round");
+                    path.setAttribute("d", "M19 9l-7 7-7-7");
+                    svg.appendChild(path);
+
+                    parentLink.appendChild(span);
+                    parentLink.appendChild(svg);
+                    li.appendChild(parentLink);
+                    const subMenu = document.createElement('ul');
+                    subMenu.className = 'submenu pl-6 mt-1 space-y-1';
+                    item.children.forEach(child => {
+                        const subLi = document.createElement('li');
+                        const childLink = document.createElement('a');
+                        childLink.href = '#';
+                        childLink.className = 'nav-link child-link block p-2 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden text-ellipsis';
+                        childLink.textContent = child.name;
+                        childLink.dataset.url = child.url;
+                        childLink.dataset.title = child.name;
+                        childLink.dataset.type = child.type;
+                        subLi.appendChild(childLink);
+                        subMenu.appendChild(subLi);
+                    });
+                    li.appendChild(subMenu);
+                    if (item.open) {
+                        parentLink.classList.add('open');
+                        subMenu.classList.add('open');
+                    }
+                    menuList.appendChild(li);
+                }
+            });
+
+            // --- Lógica de Eventos e Inicialização ---
+            menuList.addEventListener('click', function (e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+                e.preventDefault();
+
+                if (link.classList.contains('parent-link')) {
+                    const subMenu = link.nextElementSibling;
+                    if (subMenu) {
+                        link.classList.toggle('open');
+                        subMenu.classList.toggle('open');
+                    }
+                } else if (link.classList.contains('child-link')) {
+                    document.querySelectorAll('.child-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const url = link.dataset.url;
+                    const title = link.dataset.title;
+                    const type = link.dataset.type;
+                    if (type === 'weblink' && url !== '#') {
+                        window.open(url, '_blank');
+                        if (iframeContainer) iframeContainer.classList.add('hidden');
+                        if (externalLinkMessage) externalLinkMessage.classList.remove('hidden');
+                        if (externalLinkName) externalLinkName.textContent = title;
+                        if (dashboardTitle) dashboardTitle.textContent = title;
+                        if (dashboardSubtitle) dashboardSubtitle.textContent = "Este conteúdo foi aberto em uma nova aba do navegador.";
+                    } else if (type === 'powerbi') {
+                        if (iframeContainer) iframeContainer.classList.remove('hidden');
+                        if (externalLinkMessage) externalLinkMessage.classList.add('hidden');
+                        if (reportFrame && url && url !== '#') {
+                            reportFrame.src = url;
+                        } else if (reportFrame) {
+                            reportFrame.src = 'about:blank';
+                        }
+                        if (dashboardTitle) dashboardTitle.textContent = title;
+                        if (dashboardSubtitle) dashboardSubtitle.textContent = `Bem-vindo ao painel de ${title}.`;
+                    }
+                }
+            });
+            
+            const initialActiveLink = document.querySelector('.child-link.active');
+            if(initialActiveLink) {
+                initialActiveLink.click();
+            } else {
+                 const firstLink = document.querySelector('.child-link');
+                 if(firstLink) {
+                    firstLink.click();
+                 }
+            }
+        });
+    </script>
+</body>
+</html>
+
