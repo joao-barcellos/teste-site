@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Transformation</title>
+    <title>Sidebar Estilo Power BI</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -290,7 +290,7 @@
                 {
                     name: 'Fechamento',
                     children: [ 
-                        { name: 'Reporte', url: 'https://app.powerbi.com/reportEmbed?reportId=d4688f89-ac39-42fb-aaa2-5bf93d137bda&autoAuth=true&ctid=81a0f372-d5cd-4369-a46f-ec9b42720937&actionBarEnabled=true', type: 'powerbi' }, 
+                        { name: 'Reporte', url: '#', type: 'powerbi' }, 
                         { name: 'Tax', url: "#", type: 'powerbi' }, 
                         { name: 'DFs', url: '#', type: 'weblink' }, 
                         { name: 'Check P&D', url: "#", type: 'powerbi' }, 
@@ -339,13 +339,18 @@
                 // --- FIM: ITENS DE TESTE ---
             ];
 
+            // CÓDIGO CORRIGIDO
             const filteredMenuData = allMenuItems.filter(category => {
-                // Se não houver permissões na URL, mostra tudo
-                if (userPermissionCodes.length === 0) return true;
-                // A categoria 'Finance Transformation' sempre é exibida
-                if (category.name === 'Finance Transformation') return true;
-                // Exibe categorias permitidas
-                return allowedCategoryNames.includes(category.name);
+                // 1. A categoria 'Finance Transformation' é sempre exibida, independentemente das permissões.
+                if (category.name === 'Finance Transformation') {
+                    return true;
+                }
+
+                // 2. Para TODAS as outras categorias, elas só devem aparecer se:
+                //    - Houver códigos de permissão na URL (userPermissionCodes.length > 0)
+                //    - E o nome da categoria estiver na lista de permitidas (allowedCategoryNames).
+                //    Se não houver permissões na URL, a primeira condição (length > 0) será falsa, escondendo o item.
+                return userPermissionCodes.length > 0 && allowedCategoryNames.includes(category.name);
             });
             
             // --- Renderização do Menu ---
