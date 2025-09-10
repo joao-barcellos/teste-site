@@ -28,7 +28,7 @@ st.markdown("""
 try:
     # Obtém o caminho para o diretório atual do script
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    html_file_path = os.path.join(current_dir, 'html.html')
+    html_file_path = os.path.join(current_dir, 'index.html')
 
     with open(html_file_path, 'r', encoding='utf-8') as f:
         html_code_from_file = f.read()
@@ -40,3 +40,4 @@ try:
 
 except FileNotFoundError:
     st.error("O arquivo 'meu_codigo.html' não foi encontrado. Certifique-se de que ele está no mesmo diretório que o 'app.py'.")
+
